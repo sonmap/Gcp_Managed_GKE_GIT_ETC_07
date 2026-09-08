@@ -1,0 +1,24 @@
+edge_project_id  = "pjt-d-shared-base"
+sbx_project_id   = "pjt-c-admin"
+region           = "asia-northeast3"
+
+# Change to the existing Autopilot cluster name.
+cluster_name     = "gke-edge-prod-autopilot"
+cluster_location = "asia-northeast3"
+
+namespace       = "sbx-a"
+ksa_name        = "ksa-jupyter-sbx-a"
+task_group_email = "grp-sbx-a@sonmap.net"
+
+# Replace these placeholders with the five registered Workspace users.
+users = {
+  user01 = "user01@sonmap.net"
+  user02 = "user02@sonmap.net"
+  user03 = "user03@sonmap.net"
+  user04 = "user04@sonmap.net"
+  user05 = "user05@sonmap.net"
+}
+
+# Bucket names are globally unique.
+storage_bucket_name = "pjt-c-admin-sbx-a-data"
+
