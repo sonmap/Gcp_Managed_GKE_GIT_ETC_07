@@ -131,12 +131,11 @@ if ! gcloud compute addresses describe "${JUPYTERHUB_ILB_IP_NAME}" \
     --region "${REGION}"
     --subnet "${CLUSTER_SUBNETWORK_NAME}"
     --purpose SHARED_LOADBALANCER_VIP
-    --address-type INTERNAL
   )
 
+  # Supplying --subnet makes this an INTERNAL regional address reservation.
   # Leave JUPYTERHUB_ILB_IP empty to let Google Cloud choose a free address
-  # from the real cluster subnet. This avoids manually picking an address that
-  # is already reserved or in use.
+  # from the real cluster subnet and avoid collisions.
   if [[ -n "${JUPYTERHUB_ILB_IP}" ]]; then
     ADDRESS_ARGS+=(--addresses "${JUPYTERHUB_ILB_IP}")
   fi
