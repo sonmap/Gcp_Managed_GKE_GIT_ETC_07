@@ -1,0 +1,16 @@
+customer_id             = "C01234567"
+impersonated_user_email = "admin@sonmap.net"
+domain                  = "sonmap.net"
+task_group_email        = "grp-sbx-a@sonmap.net"
+
+users = [
+  "user01@sonmap.net",
+  "user02@sonmap.net",
+  "user03@sonmap.net",
+  "user04@sonmap.net",
+  "user05@sonmap.net",
+]
+
+# Set false if this mandatory GKE parent group already exists.
+create_gke_security_group = true
+
