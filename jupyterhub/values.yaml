@@ -21,7 +21,7 @@ hub:
     GoogleOAuthenticator:
       allow_all: false
       allow_existing_users: false
-      strip_domain: true
+      strip_domain: false
 
   extraEnv:
     GOOGLE_OAUTH_CLIENT_ID:
@@ -39,11 +39,6 @@ hub:
         secretKeyRef:
           name: jupyterhub-auth
           key: host
-    JUPYTERHUB_DOMAIN:
-      valueFrom:
-        secretKeyRef:
-          name: jupyterhub-auth
-          key: domain
     JUPYTERHUB_ALLOWED_USERS:
       valueFrom:
         secretKeyRef:
@@ -54,16 +49,17 @@ hub:
     10-google-oauth.py: |
       import os
 
-      domain = os.environ["JUPYTERHUB_DOMAIN"].strip().lower()
       host = os.environ["JUPYTERHUB_HOST"].strip().lower()
-      raw_users = [u.strip().lower() for u in os.environ["JUPYTERHUB_ALLOWED_USERS"].split(",") if u.strip()]
-      allowed_users = {u.split("@", 1)[0] if "@" in u else u for u in raw_users}
+      allowed_users = {
+          u.strip().lower()
+          for u in os.environ["JUPYTERHUB_ALLOWED_USERS"].split(",")
+          if u.strip()
+      }
 
       c.GoogleOAuthenticator.client_id = os.environ["GOOGLE_OAUTH_CLIENT_ID"]
       c.GoogleOAuthenticator.client_secret = os.environ["GOOGLE_OAUTH_CLIENT_SECRET"]
       c.GoogleOAuthenticator.oauth_callback_url = f"https://{host}/hub/oauth_callback"
-      c.GoogleOAuthenticator.restrict_hosted_domains = [domain]
-      c.GoogleOAuthenticator.strip_domain = True
+      c.GoogleOAuthenticator.strip_domain = False
       c.GoogleOAuthenticator.allowed_users = allowed_users
       c.GoogleOAuthenticator.allow_existing_users = False
       c.GoogleOAuthenticator.allow_all = False
