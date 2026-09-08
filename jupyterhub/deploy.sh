@@ -104,7 +104,6 @@ if ! gcloud compute addresses describe "${JUPYTERHUB_ILB_IP_NAME}" \
     --region "${REGION}"
     --subnet "${CLUSTER_SUBNETWORK}"
     --purpose SHARED_LOADBALANCER_VIP
-    --address-type INTERNAL
   )
   if [[ -n "${JUPYTERHUB_ILB_IP}" ]]; then
     address_args+=(--addresses "${JUPYTERHUB_ILB_IP}")
