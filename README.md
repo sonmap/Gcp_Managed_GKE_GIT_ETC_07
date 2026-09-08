@@ -76,7 +76,7 @@ https://www.googleapis.com/auth/admin.directory.group
 https://www.googleapis.com/auth/admin.directory.group.member
 ```
 
-If `gke-security-groups@sonmap.net` already exists, set `create_gke_security_group = false`. Add/import the child group membership under the existing parent using the organization's chosen Workspace state rather than trying to create a duplicate group.
+If `gke-security-groups@sonmap.net` already exists, set `create_gke_security_group = false`. Terraform looks up the existing parent and adds `grp-sbx-a@sonmap.net` as its child group instead of trying to create a duplicate.
 
 ## 2. Provision SBX-A data and GKE tenant resources
 
@@ -138,4 +138,3 @@ gcloud projects get-iam-policy pjt-c-admin \
   --filter="bindings.members:ksa-jupyter-sbx-a" \
   --format="table(bindings.role,bindings.members)"
 ```
-
