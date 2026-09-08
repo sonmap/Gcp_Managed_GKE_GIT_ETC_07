@@ -1,0 +1,90 @@
+hub:
+  db:
+    type: sqlite-pvc
+    pvc:
+      accessModes:
+        - ReadWriteOnce
+      storage: 2Gi
+      storageClassName: standard-rwo
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  config:
+    JupyterHub:
+      authenticator_class: dummy
+    DummyAuthenticator:
+      password: "jupyter-test-only"
+      allow_all: false
+      allowed_users:
+        - user01
+
+  networkPolicy:
+    enabled: true
+
+proxy:
+  https:
+    enabled: false
+  service:
+    type: ClusterIP
+  chp:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    networkPolicy:
+      enabled: true
+
+singleuser:
+  defaultUrl: /lab
+  serviceAccountName: ksa-jupyter-sbx-a
+  startTimeout: 600
+  cpu:
+    guarantee: 2
+    limit: 4
+  memory:
+    guarantee: 8G
+    limit: 16G
+  storage:
+    type: dynamic
+    capacity: 40Gi
+    dynamic:
+      storageClass: standard-rwo
+      storageAccessModes:
+        - ReadWriteOnce
+      pvcNameTemplate: home-{username}
+  cloudMetadata:
+    blockWithIptables: false
+  networkPolicy:
+    enabled: true
+    egressAllowRules:
+      cloudMetadataServer: true
+  extraLabels:
+    sbx-task: sbx-a
+
+cull:
+  enabled: true
+  timeout: 3600
+  every: 600
+  users: false
+  adminUsers: false
+
+scheduling:
+  userScheduler:
+    enabled: false
+  userPlaceholder:
+    replicas: 0
+
+prePuller:
+  hook:
+    enabled: false
+  continuous:
+    enabled: false

@@ -1,0 +1,141 @@
+hub:
+  db:
+    type: sqlite-pvc
+    pvc:
+      accessModes:
+        - ReadWriteOnce
+      storage: 2Gi
+      storageClassName: standard-rwo
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  config:
+    JupyterHub:
+      authenticator_class: google
+    GoogleOAuthenticator:
+      allow_all: false
+      allow_existing_users: false
+      strip_domain: false
+
+  extraEnv:
+    GOOGLE_OAUTH_CLIENT_ID:
+      valueFrom:
+        secretKeyRef:
+          name: jupyterhub-auth
+          key: client_id
+    GOOGLE_OAUTH_CLIENT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: jupyterhub-auth
+          key: client_secret
+    JUPYTERHUB_HOST:
+      valueFrom:
+        secretKeyRef:
+          name: jupyterhub-auth
+          key: host
+    JUPYTERHUB_ALLOWED_USERS:
+      valueFrom:
+        secretKeyRef:
+          name: jupyterhub-auth
+          key: allowed_users
+
+  extraConfig:
+    10-google-oauth.py: |
+      import os
+
+      host = os.environ["JUPYTERHUB_HOST"].strip().lower()
+      allowed_users = {
+          u.strip().lower()
+          for u in os.environ["JUPYTERHUB_ALLOWED_USERS"].split(",")
+          if u.strip()
+      }
+
+      c.GoogleOAuthenticator.client_id = os.environ["GOOGLE_OAUTH_CLIENT_ID"]
+      c.GoogleOAuthenticator.client_secret = os.environ["GOOGLE_OAUTH_CLIENT_SECRET"]
+      c.GoogleOAuthenticator.oauth_callback_url = f"https://{host}/hub/oauth_callback"
+      c.GoogleOAuthenticator.strip_domain = False
+      c.GoogleOAuthenticator.allowed_users = allowed_users
+      c.GoogleOAuthenticator.allow_existing_users = False
+      c.GoogleOAuthenticator.allow_all = False
+      c.GoogleOAuthenticator.scope = ["openid", "email", "profile"]
+
+  networkPolicy:
+    enabled: true
+
+proxy:
+  https:
+    enabled: false
+
+  service:
+    type: ClusterIP
+    annotations:
+      cloud.google.com/neg: '{"ingress": true}'
+      cloud.google.com/backend-config: '{"default": "jupyterhub-backend"}'
+
+  chp:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    networkPolicy:
+      enabled: true
+
+singleuser:
+  defaultUrl: /lab
+  serviceAccountName: ksa-jupyter-sbx-a
+  startTimeout: 600
+
+  cpu:
+    guarantee: 2
+    limit: 4
+  memory:
+    guarantee: 8G
+    limit: 16G
+
+  storage:
+    type: dynamic
+    capacity: 40Gi
+    dynamic:
+      storageClass: standard-rwo
+      storageAccessModes:
+        - ReadWriteOnce
+      pvcNameTemplate: home-{username}
+
+  cloudMetadata:
+    blockWithIptables: false
+
+  networkPolicy:
+    enabled: true
+    egressAllowRules:
+      cloudMetadataServer: true
+
+  extraLabels:
+    sbx-task: sbx-a
+
+cull:
+  enabled: true
+  timeout: 3600
+  every: 600
+  users: false
+  adminUsers: false
+
+scheduling:
+  userScheduler:
+    enabled: false
+  userPlaceholder:
+    replicas: 0
+
+prePuller:
+  hook:
+    enabled: false
+  continuous:
+    enabled: false
