@@ -30,10 +30,17 @@ resource "googleworkspace_group" "gke_security" {
   description = "Required parent group for GKE Google Groups RBAC. Managed by Terraform."
 }
 
-resource "googleworkspace_group_member" "task_group_in_gke_security" {
-  count = var.create_gke_security_group ? 1 : 0
+data "googleworkspace_group" "existing_gke_security" {
+  count = var.create_gke_security_group ? 0 : 1
+  email = var.gke_security_group_email
+}
 
-  group_id         = googleworkspace_group.gke_security[0].id
+locals {
+  gke_security_group_id = var.create_gke_security_group ? googleworkspace_group.gke_security[0].id : data.googleworkspace_group.existing_gke_security[0].id
+}
+
+resource "googleworkspace_group_member" "task_group_in_gke_security" {
+  group_id         = local.gke_security_group_id
   email            = googleworkspace_group.task.email
   role             = "MEMBER"
   type             = "GROUP"
@@ -47,4 +54,3 @@ output "task_group_email" {
 output "task_group_id" {
   value = googleworkspace_group.task.id
 }
-
