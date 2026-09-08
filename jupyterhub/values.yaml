@@ -114,8 +114,13 @@ singleuser:
         - ReadWriteOnce
       pvcNameTemplate: home-{username}
 
+  cloudMetadata:
+    blockWithIptables: false
+
   networkPolicy:
     enabled: true
+    egressAllowRules:
+      cloudMetadataServer: true
 
   extraLabels:
     sbx-task: sbx-a
